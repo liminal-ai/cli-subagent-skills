@@ -42,6 +42,7 @@ cursor-subagent-skill/
 2. Run `npm run verify`.
 3. Run `npm run build` to produce distributables.
 4. Run `npm run deploy` to install locally for Claude Code.
+5. Run `bash scripts/regression-test.sh` for the heavier Cursor-specific runtime checks.
 
 ## Build artifacts (`.zip` and `.skill`)
 

@@ -14,7 +14,7 @@ Usage:
   cursor-result [--cwd <path>] <mode> [session-id]
 
 Modes:
-  exec          Run `cursor-agent -p --output-format stream-json` and print the final assistant text by default
+  exec          Run `cursor-agent -p --output-format stream-json` and print the normalized final assistant text by default
   last          Last assistant text message
   messages      All assistant text messages
   session-id    Latest session ID for the cwd, or echo the passed session ID if found
@@ -27,7 +27,7 @@ Modes:
   summary       Session ID + model + usage + last message
 
 Global flags:
-  --json        For `exec`, print the final result event instead of the last assistant text
+  --json        For `exec`, print a normalized JSON object with session_id/result/model/usage/session_file/stream_file
   --cwd <path>  Resolve sessions and run exec in a different working directory
 
 Examples:
@@ -145,6 +145,87 @@ resolve_stream_file() {
   printf '%s\n' "$path"
 }
 
+extract_last_text_stream() {
+  local input="$1"
+  jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text] | last // empty | sub("^[\\r\\n]+"; "") | sub("[\\r\\n]+$"; "")' "$input"
+}
+
+extract_messages_stream() {
+  local input="$1"
+  jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input"
+}
+
+extract_last_text_transcript() {
+  local input="$1"
+  jq -rs '[.[] | select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text] | last // empty | sub("^[\\r\\n]+"; "") | sub("[\\r\\n]+$"; "")' "$input"
+}
+
+extract_messages_transcript() {
+  local input="$1"
+  jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input"
+}
+
+extract_tools_stream() {
+  local input="$1"
+  jq -c '
+    select(.type=="tool_call" and .subtype=="started") as $evt
+    | ($evt.tool_call | to_entries[0]) as $tc
+    | {
+        tool:
+          (if $tc.key == "readToolCall" then "Read"
+           elif $tc.key == "shellToolCall" then "Bash"
+           elif $tc.key == "editToolCall" then "Edit"
+           elif $tc.key == "globToolCall" then "Glob"
+           elif $tc.key == "grepToolCall" then "Grep"
+           else ($tc.key | sub("ToolCall$"; ""))
+           end),
+        input: ($tc.value.args // {}),
+        id: $evt.call_id
+      }' "$input"
+}
+
+normalized_exec_json() {
+  local input="$1"
+  local sid
+  sid="$(jq -rs '[.[] | select(.type=="result") | .session_id] | last // empty' "$input")"
+  local model
+  model="$(jq -rs '[.[] | select(.type=="system" and .subtype=="init") | .model] | last // empty' "$input")"
+  local result
+  result="$(extract_last_text_stream "$input")"
+  local usage
+  usage="$(jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$input")"
+  local session_file=""
+  local stream_file_path=""
+  if [[ -n "$sid" ]]; then
+    local transcript_candidate
+    transcript_candidate="$(transcript_file "$sid")"
+    local stream_candidate
+    stream_candidate="$(stream_file "$sid")"
+    if [[ -f "$transcript_candidate" ]]; then
+      session_file="$transcript_candidate"
+    fi
+    if [[ -f "$stream_candidate" ]]; then
+      stream_file_path="$stream_candidate"
+    fi
+  fi
+
+  jq -n \
+    --arg session_id "$sid" \
+    --arg result "$result" \
+    --arg model "$model" \
+    --arg session_file "$session_file" \
+    --arg stream_file "$stream_file_path" \
+    --argjson usage "$usage" \
+    '{
+      session_id: $session_id,
+      result: $result,
+      model: $model,
+      usage: $usage,
+      session_file: (if $session_file == "" then null else $session_file end),
+      stream_file: (if $stream_file == "" then null else $stream_file end)
+    }'
+}
+
 run_exec() {
   need_command cursor-agent
   need_command jq
@@ -159,7 +240,7 @@ run_exec() {
   shift
 
   local temp_stream
-  temp_stream="$(mktemp "/tmp/cursor-result.XXXXXX.jsonl")"
+  temp_stream="$(mktemp "/tmp/cursor-result.XXXXXX")"
   local exit_code=0
 
   (
@@ -178,9 +259,9 @@ run_exec() {
   fi
 
   if $RAW_JSON; then
-    jq -sc '[.[] | select(.type=="result")] | last // {}' "$temp_stream"
+    normalized_exec_json "$temp_stream"
   else
-    jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text] | last // empty' "$temp_stream"
+    extract_last_text_stream "$temp_stream"
   fi
 
   rm -f "$temp_stream"
@@ -225,13 +306,23 @@ case "$mode" in
     ;;
   last)
     need_command jq
-    input="$(resolve_transcript_file "${1:-}")"
-    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input" | tail -1
+    sid="$(resolve_session_id "${1:-}")"
+    if stream="$(resolve_stream_file "$sid" 2>/dev/null)"; then
+      extract_last_text_stream "$stream"
+    else
+      transcript="$(resolve_transcript_file "$sid")"
+      extract_last_text_transcript "$transcript"
+    fi
     ;;
   messages)
     need_command jq
-    input="$(resolve_transcript_file "${1:-}")"
-    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input"
+    sid="$(resolve_session_id "${1:-}")"
+    if stream="$(resolve_stream_file "$sid" 2>/dev/null)"; then
+      extract_messages_stream "$stream"
+    else
+      transcript="$(resolve_transcript_file "$sid")"
+      extract_messages_transcript "$transcript"
+    fi
     ;;
   session-id)
     resolve_session_id "${1:-}"
@@ -244,8 +335,13 @@ case "$mode" in
     ;;
   tools)
     need_command jq
-    input="$(resolve_transcript_file "${1:-}")"
-    jq -c 'select(.role=="assistant") | .message.content[]? | select(.type=="tool_use") | {tool: .name, input: .input}' "$input"
+    sid="$(resolve_session_id "${1:-}")"
+    if stream="$(resolve_stream_file "$sid" 2>/dev/null)"; then
+      extract_tools_stream "$stream"
+    else
+      input="$(resolve_transcript_file "$sid")"
+      jq -c 'select(.role=="assistant") | .message.content[]? | select(.type=="tool_use") | {tool: .name, input: .input}' "$input"
+    fi
     ;;
   commands)
     need_command jq
@@ -299,19 +395,32 @@ case "$mode" in
     ;;
   usage)
     need_command jq
-    input="$(resolve_stream_file "${1:-}")"
-    jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$input"
+    sid="$(resolve_session_id "${1:-}")"
+    if stream="$(resolve_stream_file "$sid" 2>/dev/null)"; then
+      jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$stream"
+    else
+      printf '{}\n'
+    fi
     ;;
   summary)
     need_command jq
     sid="$(resolve_session_id "${1:-}")"
-    stream="$(resolve_stream_file "$sid")"
-    transcript="$(resolve_transcript_file "$sid")"
+    stream="$(resolve_stream_file "$sid" 2>/dev/null || true)"
+    transcript="$(resolve_transcript_file "$sid" 2>/dev/null || true)"
     echo "SESSION: $sid"
-    echo "MODEL: $(jq -rs '[.[] | select(.type=="system" and .subtype=="init") | .model] | last // empty' "$stream")"
-    echo "USAGE: $(jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$stream")"
+    if [[ -n "$stream" ]]; then
+      echo "MODEL: $(jq -rs '[.[] | select(.type=="system" and .subtype=="init") | .model] | last // empty' "$stream")"
+      echo "USAGE: $(jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$stream")"
+    else
+      echo "MODEL: "
+      echo "USAGE: {}"
+    fi
     echo "---"
-    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$transcript" | tail -1
+    if [[ -n "$stream" && -f "$stream" ]]; then
+      extract_last_text_stream "$stream"
+    else
+      extract_last_text_transcript "$transcript"
+    fi
     ;;
   *)
     echo "Unknown mode: $mode" >&2

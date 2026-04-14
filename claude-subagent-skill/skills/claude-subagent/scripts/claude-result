@@ -27,7 +27,7 @@ Modes:
   session-file  Path to the resolved session JSONL
 
 Global flags:
-  --json        For `exec`, print the raw JSON result object instead of `.result`
+  --json        For `exec`, print a normalized JSON object with session_id/result/model/usage/session_file
   --cwd <path>  Resolve sessions and run exec in a different working directory
 
 Examples:
@@ -136,6 +136,42 @@ last_usage() {
   jq -s '([.[] | select(.type=="result") | .usage] | last) // ([.[] | select(.type=="assistant" and .message.usage != null) | .message.usage] | last) // {}' "$input"
 }
 
+normalize_result_text() {
+  jq -r '.result // empty | sub("^[\\r\\n]+"; "") | sub("[\\r\\n]+$"; "")'
+}
+
+exec_model() {
+  jq -r '(.modelUsage | keys[0]? // "")'
+}
+
+normalized_exec_json() {
+  local input="$1"
+  local sid
+  sid="$(jq -r '.session_id // ""' "$input")"
+  local session_file=""
+  if [[ -n "$sid" ]]; then
+    local candidate
+    candidate="$(project_dir)/$sid.jsonl"
+    if [[ -f "$candidate" ]]; then
+      session_file="$candidate"
+    fi
+  fi
+
+  jq -n \
+    --arg session_id "$sid" \
+    --arg result "$(normalize_result_text < "$input")" \
+    --arg model "$(exec_model < "$input")" \
+    --arg session_file "$session_file" \
+    --argjson usage "$(jq '.usage // {}' "$input")" \
+    '{
+      session_id: $session_id,
+      result: $result,
+      model: $model,
+      usage: $usage,
+      session_file: (if $session_file == "" then null else $session_file end)
+    }'
+}
+
 run_exec() {
   need_command claude
   need_command jq
@@ -159,9 +195,9 @@ run_exec() {
   ) || exit_code=$?
 
   if $RAW_JSON; then
-    cat "$temp_json"
+    normalized_exec_json "$temp_json"
   else
-    jq -r '.result // empty' "$temp_json"
+    normalize_result_text < "$temp_json"
   fi
 
   rm -f "$temp_json"

@@ -78,6 +78,9 @@ cursor-result usage [session-id]
 cursor-result summary [session-id]
 ```
 
+For automated callers, prefer `cursor-result --json exec ...` and carry the returned `session_id`
+forward explicitly. Treat `cursor-result session-id` as a convenience for human workflows.
+
 ## Execution Patterns
 
 ### 1) Synchronous (blocking, result inline)
@@ -205,6 +208,8 @@ Cursor persists transcripts at:
 ```text
 <session-id>.stream.jsonl
 ```
+
+For automation, prefer explicit session IDs captured from `--json exec` instead of resolving the latest session by cwd.
 
 ## Cursor-Specific Notes
 

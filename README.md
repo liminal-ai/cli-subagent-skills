@@ -26,3 +26,9 @@ Run all runtime smoke tests from the monorepo root:
 ```bash
 bash scripts/smoke-test-all.sh
 ```
+
+Run the machine-readable contract checks from the monorepo root:
+
+```bash
+bash scripts/contract-test-all.sh
+```

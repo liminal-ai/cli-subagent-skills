@@ -96,6 +96,9 @@ claude-result session-id [session-id]
 claude-result session-file [session-id]
 ```
 
+For automated callers, prefer `claude-result --json exec ...` and carry the returned `session_id`
+forward explicitly. Treat `claude-result session-id` as a convenience for human workflows.
+
 ## Execution Patterns
 
 ### 1) Synchronous (blocking, result inline)
@@ -231,6 +234,8 @@ Claude persists sessions at:
 ```
 
 The helper resolves the latest session for the current working directory by default, or you can pass a specific session ID.
+
+For automation, prefer explicit session IDs captured from `--json exec` instead of resolving the latest session by cwd.
 
 ## Session Event Reference
 

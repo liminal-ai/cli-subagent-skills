@@ -11,7 +11,7 @@ Run GitHub Copilot CLI as a subagent for code-related tasks.
 
 - **Implementation** — code changes, bug fixes, feature work
 - **Validation** — second opinion on specs, code, architecture
-- **Code review** — structured review with built-in code-review agent
+- **Code review** — structured review in a fresh Copilot session
 - **Parallel work** — fan out independent tasks across multiple agents
 - **Enterprise environments** — Copilot may be the only approved AI coding tool
 - **Multi-model access** — switch between Claude, GPT, Gemini via one CLI
@@ -75,18 +75,21 @@ copilot-result messages
 ### Tier 3 — Inspect specific details on demand
 
 ```bash
-copilot-result session-id             # Latest session ID
+copilot-result session-id             # Latest session ID (convenience)
 copilot-result tools                  # Tool calls with names and arguments
 copilot-result reasoning              # Thinking summaries
 copilot-result summary                # Session ID + model + last message
 ```
 
-All extraction commands default to the latest session. Pass a session ID to target a specific one:
+All extraction commands can target a specific session ID:
 
 ```bash
 copilot-result last <session-id>
 copilot-result tools <session-id>
 ```
+
+For automated callers, prefer `copilot-result --json exec ...` and carry the returned `session_id`
+forward explicitly. Treat `copilot-result session-id` as a convenience for human workflows.
 
 ### Extraction Helper
 
@@ -94,10 +97,11 @@ Use `~/.claude/skills/copilot-subagent/scripts/copilot-result` for all operation
 
 ```bash
 copilot-result exec "prompt" --allow-all   # Run copilot (Tier 1)
+copilot-result --json exec "prompt" --allow-all  # Normalized machine-readable result
 copilot-result --raw-tools exec "prompt" --allow-all   # Full/default Copilot tools
 copilot-result last [session-id]           # Last agent message
 copilot-result messages [session-id]       # All agent messages
-copilot-result session-id                  # Latest session ID
+copilot-result session-id                  # Latest session ID (convenience)
 copilot-result tools [session-id]          # Tool calls + arguments
 copilot-result reasoning [session-id]      # Thinking summaries
 copilot-result summary [session-id]        # Session ID + model + last message
@@ -150,10 +154,11 @@ cat /tmp/copilot-b.txt
 
 ### 4) Resume (continue a prior session)
 
-Resume works in non-interactive mode. Use `copilot-result exec` so default tool constraints still apply:
+Resume works in non-interactive mode. Use `copilot-result exec` so default tool constraints still apply.
+For automation, prefer an explicit session ID captured from `copilot-result --json exec ...`:
 
 ```bash
-cd /path/to/project && copilot-result exec "follow-up prompt" --resume $(copilot-result session-id) --allow-all 2>/dev/null
+cd /path/to/project && copilot-result exec "follow-up prompt" --resume <session-id> --allow-all 2>/dev/null
 ```
 
 Resume the most recent session:
@@ -173,31 +178,6 @@ Get the session ID from a previous run:
 ```bash
 copilot-result session-id
 ```
-
-### 5) Built-in Agents
-
-Copilot has built-in agents for specialized tasks:
-
-```bash
-# Code review (built-in agent)
-cd /path/to/project && copilot-result --raw-tools exec "Review my recent changes" --agent code-review --allow-all 2>/dev/null
-
-# Codebase exploration
-cd /path/to/project && copilot-result --raw-tools exec "How does auth work in this project?" --agent explore --allow-all 2>/dev/null
-
-# Implementation planning
-cd /path/to/project && copilot-result --raw-tools exec "Plan how to add rate limiting" --agent plan --allow-all 2>/dev/null
-
-# Run commands (tests, builds)
-cd /path/to/project && copilot-result --raw-tools exec "Run the test suite and fix failures" --agent task --allow-all 2>/dev/null
-```
-
-| Agent | Purpose |
-|-------|---------|
-| `code-review` | Review changes, high signal-to-noise, genuine issues only |
-| `explore` | Fast codebase analysis without cluttering main context |
-| `plan` | Create implementation plans by analyzing dependencies |
-| `task` | Run commands (tests, builds); brief success, full failure output |
 
 ## Permission Levels
 
@@ -357,7 +337,6 @@ Copilot persists sessions at `~/.copilot/session-state/<session-id>/`. Each sess
 | Async exec | `copilot-result exec "prompt" --allow-all > out.txt 2>/dev/null &` |
 | Resume session | `copilot-result exec "prompt" --resume <ID> --allow-all 2>/dev/null` |
 | Resume latest | `copilot-result exec "prompt" --resume $(copilot-result session-id) --allow-all` |
-| Code review | `copilot-result --raw-tools exec "Review changes" --agent code-review --allow-all` |
 | Extract last msg | `copilot-result last` |
 | Extract session ID | `copilot-result session-id` |
 | Different model | `--model gpt-5.2` |
