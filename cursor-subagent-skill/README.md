@@ -2,7 +2,7 @@
 
 ## Project purpose
 
-This repo is the source of truth for the `cursor-subagent` skill and its local/release packaging workflow.
+This package is the source of truth for the `cursor-subagent` skill inside the `cli-as-subagent-skills` monorepo.
 
 It provides scripts to:
 
@@ -93,7 +93,7 @@ This will:
 
 1. run build
 2. require clean git working tree (fails if dirty)
-3. create local annotated tag `v<version>` if missing
+3. create local annotated tag `cursor-subagent-v<version>` if missing
 4. print manual publish steps
 
 Optional override:
@@ -111,25 +111,25 @@ Manual process:
 
 1. `npm run release:local`
 2. `git push origin <branch>`
-3. `git push origin v<version>`
+3. `git push origin cursor-subagent-v<version>`
 4. create a GitHub Release and upload artifacts in one step:
 
 ```bash
-gh release create v<version> \
+gh release create cursor-subagent-v<version> \
   dist/cursor-subagent-v<version>.zip \
   dist/cursor-subagent-v<version>.skill \
-  --repo liminal-ai/cursor-subagent-skill \
-  --title "v<version>" \
-  --notes "Release v<version>."
+  --repo <owner>/<monorepo> \
+  --title "cursor-subagent v<version>" \
+  --notes "Release cursor-subagent v<version>."
 ```
 
 If the release already exists, upload/replace assets:
 
 ```bash
-gh release upload v<version> \
+gh release upload cursor-subagent-v<version> \
   dist/cursor-subagent-v<version>.zip \
   dist/cursor-subagent-v<version>.skill \
-  --repo liminal-ai/cursor-subagent-skill \
+  --repo <owner>/<monorepo> \
   --clobber
 ```
 

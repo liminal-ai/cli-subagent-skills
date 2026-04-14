@@ -49,7 +49,7 @@ async function main() {
   }
 
   const version = await readVersion(repoRoot);
-  const tag = `v${version}`;
+  const tag = `claude-subagent-v${version}`;
   const existingTag = run("git", ["tag", "--list", tag], repoRoot);
 
   if (existingTag === "") {

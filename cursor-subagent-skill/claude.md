@@ -15,13 +15,13 @@ When publishing any new version to GitHub, you must manually upload release arti
    - `npm run build`
 3. Commit and push branch.
 4. Create/push tag:
-   - `git tag -a v<version> -m "Release v<version>"`
+   - `git tag -a cursor-subagent-v<version> -m "Release cursor-subagent-v<version>"`
    - `git push origin <branch>`
-   - `git push origin v<version>`
+   - `git push origin cursor-subagent-v<version>`
 5. Publish artifacts to GitHub Release:
    - If creating new release:
-     - `gh release create v<version> dist/cursor-subagent-v<version>.zip dist/cursor-subagent-v<version>.skill --repo liminal-ai/cursor-subagent-skill --title "v<version>" --notes "Release v<version>."`
+     - `gh release create cursor-subagent-v<version> dist/cursor-subagent-v<version>.zip dist/cursor-subagent-v<version>.skill --repo <owner>/<monorepo> --title "cursor-subagent v<version>" --notes "Release cursor-subagent v<version>."`
    - If release already exists:
-     - `gh release upload v<version> dist/cursor-subagent-v<version>.zip dist/cursor-subagent-v<version>.skill --repo liminal-ai/cursor-subagent-skill --clobber`
+     - `gh release upload cursor-subagent-v<version> dist/cursor-subagent-v<version>.zip dist/cursor-subagent-v<version>.skill --repo <owner>/<monorepo> --clobber`
 
 Do not mark a release complete until both `.zip` and `.skill` assets are attached.

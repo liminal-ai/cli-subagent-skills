@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   }
 
   const version = await readVersion(repoRoot);
-  const tag = `v${version}`;
+  const tag = `copilot-subagent-v${version}`;
   const existingTag = run("git", ["tag", "--list", tag], repoRoot);
 
   if (existingTag === "") {

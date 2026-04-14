@@ -2,7 +2,7 @@
 
 ## Project purpose
 
-This repo is the source of truth for the `claude-subagent` skill and its local/release packaging workflow.
+This package is the source of truth for the `claude-subagent` skill inside the `cli-as-subagent-skills` monorepo.
 
 It provides scripts to:
 
@@ -92,7 +92,7 @@ This will:
 
 1. run build
 2. require clean git working tree (fails if dirty)
-3. create local annotated tag `v<version>` if missing
+3. create local annotated tag `claude-subagent-v<version>` if missing
 4. print manual publish steps
 
 Optional override:
@@ -112,25 +112,25 @@ Manual process:
 
 1. `npm run release:local`
 2. `git push origin <branch>`
-3. `git push origin v<version>`
+3. `git push origin claude-subagent-v<version>`
 4. create a GitHub Release and upload artifacts in one step:
 
 ```bash
-gh release create v<version> \
+gh release create claude-subagent-v<version> \
   dist/claude-subagent-v<version>.zip \
   dist/claude-subagent-v<version>.skill \
-  --repo liminal-ai/claude-subagent-skill \
-  --title "v<version>" \
-  --notes "Release v<version>."
+  --repo <owner>/<monorepo> \
+  --title "claude-subagent v<version>" \
+  --notes "Release claude-subagent v<version>."
 ```
 
 If the release already exists, upload/replace assets:
 
 ```bash
-gh release upload v<version> \
+gh release upload claude-subagent-v<version> \
   dist/claude-subagent-v<version>.zip \
   dist/claude-subagent-v<version>.skill \
-  --repo liminal-ai/claude-subagent-skill \
+  --repo <owner>/<monorepo> \
   --clobber
 ```
 

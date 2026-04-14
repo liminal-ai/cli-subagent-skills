@@ -15,13 +15,13 @@ When publishing any new version to GitHub, you must manually upload release arti
    - `bun run build`
 3. Commit and push branch.
 4. Create/push tag:
-   - `git tag -a v<version> -m "Release v<version>"`
+   - `git tag -a copilot-subagent-v<version> -m "Release copilot-subagent-v<version>"`
    - `git push origin <branch>`
-   - `git push origin v<version>`
+   - `git push origin copilot-subagent-v<version>`
 5. Publish artifacts to GitHub Release:
    - If creating new release:
-     - `gh release create v<version> dist/copilot-subagent-v<version>.zip dist/copilot-subagent-v<version>.skill --repo liminal-ai/copilot-subagent-skill --title "v<version>" --notes "Release v<version>."`
+     - `gh release create copilot-subagent-v<version> dist/copilot-subagent-v<version>.zip dist/copilot-subagent-v<version>.skill --repo <owner>/<monorepo> --title "copilot-subagent v<version>" --notes "Release copilot-subagent v<version>."`
    - If release already exists:
-     - `gh release upload v<version> dist/copilot-subagent-v<version>.zip dist/copilot-subagent-v<version>.skill --repo liminal-ai/copilot-subagent-skill --clobber`
+     - `gh release upload copilot-subagent-v<version> dist/copilot-subagent-v<version>.zip dist/copilot-subagent-v<version>.skill --repo <owner>/<monorepo> --clobber`
 
 Do not mark a release complete until both `.zip` and `.skill` assets are attached.

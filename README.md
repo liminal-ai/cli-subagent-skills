@@ -10,13 +10,14 @@ The root repository is only responsible for grouping them together in one place.
 - `claude-subagent-skill`
 - `codex-subagent-skill`
 - `copilot-subagent-skill`
-- `cursor-subagent-skill` — reserved scaffold for future implementation
+- `cursor-subagent-skill`
 
 ## Notes
 
 - Existing package layouts are preserved to minimize churn.
 - Tooling is still package-local for now.
 - Future CLI subagent skills can be added alongside these packages.
+- Package releases should use package-prefixed tags such as `claude-subagent-v0.1.0` and `cursor-subagent-v0.1.0`.
 
 ## Smoke tests
 

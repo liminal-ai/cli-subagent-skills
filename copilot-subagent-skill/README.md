@@ -2,7 +2,7 @@
 
 ## Project purpose
 
-This repo is the source of truth for the `copilot-subagent` skill and its local/release packaging workflow.
+This package is the source of truth for the `copilot-subagent` skill inside the `cli-as-subagent-skills` monorepo.
 
 It provides Bun scripts to:
 
@@ -92,7 +92,7 @@ This will:
 
 1. run build
 2. require clean git working tree (fails if dirty)
-3. create local annotated tag `v<version>` if missing
+3. create local annotated tag `copilot-subagent-v<version>` if missing
 4. print manual publish steps
 
 Optional override:
@@ -112,25 +112,25 @@ Manual process:
 
 1. `bun run release:local`
 2. `git push origin <branch>`
-3. `git push origin v<version>`
+3. `git push origin copilot-subagent-v<version>`
 4. create a GitHub Release and upload artifacts in one step:
 
 ```bash
-gh release create v<version> \
+gh release create copilot-subagent-v<version> \
   dist/copilot-subagent-v<version>.zip \
   dist/copilot-subagent-v<version>.skill \
-  --repo liminal-ai/copilot-subagent-skill \
-  --title "v<version>" \
-  --notes "Release v<version>."
+  --repo <owner>/<monorepo> \
+  --title "copilot-subagent v<version>" \
+  --notes "Release copilot-subagent v<version>."
 ```
 
 If the release already exists, upload/replace assets:
 
 ```bash
-gh release upload v<version> \
+gh release upload copilot-subagent-v<version> \
   dist/copilot-subagent-v<version>.zip \
   dist/copilot-subagent-v<version>.skill \
-  --repo liminal-ai/copilot-subagent-skill \
+  --repo <owner>/<monorepo> \
   --clobber
 ```
 
