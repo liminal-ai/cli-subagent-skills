@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLAUDE_PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
+RAW_JSON=false
+CWD_OVERRIDE=""
+
+usage() {
+  cat <<'USAGE'
+claude-result — Run Claude Code CLI safely and extract structured data from saved sessions.
+
+Usage:
+  claude-result [--json] [--cwd <path>] exec "prompt" [claude flags...]
+  claude-result [--cwd <path>] <mode> [session-id]
+
+Modes:
+  exec          Run `claude -p --output-format json` and print `.result` by default
+  last          Last assistant text message
+  messages      All assistant text messages
+  thinking      Assistant thinking blocks
+  reasoning     Alias for thinking (for parity with other subagent helpers)
+  commands      Bash tool calls plus their captured output/error state (JSON, one per line)
+  tools         Tool calls with names and inputs (JSON, one per line)
+  usage         Usage object from the final result (JSON)
+  summary       Session ID + model + usage + last assistant text
+  session-id    Latest session ID for the cwd, or echo the passed session ID if found
+  session-file  Path to the resolved session JSONL
+
+Global flags:
+  --json        For `exec`, print the raw JSON result object instead of `.result`
+  --cwd <path>  Resolve sessions and run exec in a different working directory
+
+Examples:
+  claude-result exec "Review src/auth for issues"
+  claude-result exec "Implement the fix" --permission-mode acceptEdits --allowedTools Read,Write,Edit,Bash
+  claude-result --json exec "Summarize the repo"
+  claude-result session-id
+  claude-result summary
+  claude-result commands
+  claude-result tools 123e4567-e89b-12d3-a456-426614174000
+USAGE
+}
+
+need_command() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Error: required command not found: $1" >&2
+    exit 1
+  fi
+}
+
+project_cwd() {
+  if [[ -n "$CWD_OVERRIDE" ]]; then
+    printf '%s\n' "$CWD_OVERRIDE"
+  else
+    pwd -P
+  fi
+}
+
+project_slug() {
+  local cwd
+  cwd="$(project_cwd)"
+  printf '%s\n' "${cwd//\//-}"
+}
+
+project_dir() {
+  printf '%s\n' "$CLAUDE_PROJECTS_DIR/$(project_slug)"
+}
+
+latest_session_file() {
+  local dir
+  dir="$(project_dir)"
+
+  if [[ ! -d "$dir" ]]; then
+    echo "No Claude session directory found for cwd: $(project_cwd)" >&2
+    return 1
+  fi
+
+  shopt -s nullglob
+  local files=("$dir"/*.jsonl)
+  shopt -u nullglob
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "No Claude sessions found in: $dir" >&2
+    return 1
+  fi
+
+  local latest
+  latest="$(ls -t "${files[@]}" 2>/dev/null | head -1 || true)"
+
+  if [[ -z "$latest" ]]; then
+    echo "No Claude sessions found in: $dir" >&2
+    return 1
+  fi
+
+  printf '%s\n' "$latest"
+}
+
+resolve_session_file() {
+  local session_id="${1:-}"
+
+  if [[ -z "$session_id" ]]; then
+    latest_session_file
+    return
+  fi
+
+  local local_path
+  local_path="$(project_dir)/$session_id.jsonl"
+  if [[ -f "$local_path" ]]; then
+    printf '%s\n' "$local_path"
+    return
+  fi
+
+  local match
+  match="$(find "$CLAUDE_PROJECTS_DIR" -type f -name "$session_id.jsonl" -print 2>/dev/null | head -1 || true)"
+  if [[ -n "$match" ]]; then
+    printf '%s\n' "$match"
+    return
+  fi
+
+  echo "Session not found: $session_id" >&2
+  return 1
+}
+
+last_model() {
+  local input="$1"
+  jq -rs '[.[] | select(.type=="assistant" and .message.model != null) | .message.model] | last // empty' "$input"
+}
+
+last_text() {
+  local input="$1"
+  jq -rs '[.[] | select(.type=="assistant" and .message.role=="assistant") | .message.content[]? | select(.type=="text") | .text] | last // empty' "$input"
+}
+
+last_usage() {
+  local input="$1"
+  jq -s '([.[] | select(.type=="result") | .usage] | last) // ([.[] | select(.type=="assistant" and .message.usage != null) | .message.usage] | last) // {}' "$input"
+}
+
+run_exec() {
+  need_command claude
+  need_command jq
+
+  if [[ $# -lt 1 ]]; then
+    echo "Error: exec requires a prompt" >&2
+    usage >&2
+    exit 1
+  fi
+
+  local prompt="$1"
+  shift
+
+  local temp_json
+  temp_json="$(mktemp "/tmp/claude-result.XXXXXX")"
+
+  local exit_code=0
+  (
+    cd "$(project_cwd)"
+    claude -p --output-format json "$@" -- "$prompt" </dev/null >"$temp_json"
+  ) || exit_code=$?
+
+  if $RAW_JSON; then
+    cat "$temp_json"
+  else
+    jq -r '.result // empty' "$temp_json"
+  fi
+
+  rm -f "$temp_json"
+  return "$exit_code"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --json)
+      RAW_JSON=true
+      shift
+      ;;
+    --cwd)
+      CWD_OVERRIDE="${2:-}"
+      if [[ -z "$CWD_OVERRIDE" ]]; then
+        echo "Error: --cwd requires a path" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 0
+fi
+
+mode="$1"
+shift
+
+case "$mode" in
+  exec)
+    run_exec "$@"
+    ;;
+  last)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    last_text "$input"
+    ;;
+  messages)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    jq -r 'select(.type=="assistant" and .message.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input"
+    ;;
+  thinking|reasoning)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    jq -r 'select(.type=="assistant" and .message.role=="assistant") | .message.content[]? | select(.type=="thinking") | .thinking' "$input"
+    ;;
+  commands)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    jq -sc '
+      def bash_calls:
+        [ .[] 
+          | select(.type=="assistant" and .message.role=="assistant")
+          | .message.content[]?
+          | select(.type=="tool_use" and .name=="Bash")
+          | {id, cmd: .input.command, desc: .input.description}
+        ];
+      def bash_results:
+        [ .[]
+          | select(.type=="user")
+          | .message.content[]?
+          | select(.type=="tool_result")
+          | {id: .tool_use_id, out: .content, is_error: (.is_error // false)}
+        ];
+      (bash_calls) as $calls
+      | (bash_results | map({key: .id, value: {out, is_error}}) | from_entries) as $results
+      | $calls[]
+      | {cmd, desc, out: ($results[.id].out // null), is_error: ($results[.id].is_error // false)}
+    ' "$input"
+    ;;
+  tools)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    jq -c 'select(.type=="assistant" and .message.role=="assistant") | .message.content[]? | select(.type=="tool_use") | {tool: .name, input: .input, id: .id}' "$input"
+    ;;
+  usage)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    last_usage "$input"
+    ;;
+  summary)
+    need_command jq
+    input="$(resolve_session_file "${1:-}")"
+    echo "SESSION: $(basename "$input" .jsonl)"
+    model="$(last_model "$input")"
+    if [[ -n "$model" ]]; then
+      echo "MODEL: $model"
+    fi
+    echo "USAGE: $(last_usage "$input" | jq -c .)"
+    echo "---"
+    last_text "$input"
+    ;;
+  session-id)
+    input="$(resolve_session_file "${1:-}")"
+    basename "$input" .jsonl
+    ;;
+  session-file)
+    resolve_session_file "${1:-}"
+    ;;
+  *)
+    echo "Unknown mode: $mode" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
