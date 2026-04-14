@@ -1,0 +1,321 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CURSOR_PROJECTS_DIR="${CURSOR_PROJECTS_DIR:-$HOME/.cursor/projects}"
+RAW_JSON=false
+CWD_OVERRIDE=""
+
+usage() {
+  cat <<'USAGE'
+cursor-result — Run Cursor Agent safely and extract structured data from saved sessions.
+
+Usage:
+  cursor-result [--json] [--cwd <path>] exec "prompt" [cursor-agent flags...]
+  cursor-result [--cwd <path>] <mode> [session-id]
+
+Modes:
+  exec          Run `cursor-agent -p --output-format stream-json` and print the final assistant text by default
+  last          Last assistant text message
+  messages      All assistant text messages
+  session-id    Latest session ID for the cwd, or echo the passed session ID if found
+  session-file  Path to the saved Cursor transcript JSONL
+  stream-file   Path to the saved stream JSONL produced by cursor-result exec
+  tools         Tool calls with names and inputs (JSON, one per line)
+  commands      Shell command attempts with completion data (JSON, one per line)
+  reasoning     Reasoning text if emitted by the runtime
+  usage         Usage object from the final result (JSON)
+  summary       Session ID + model + usage + last message
+
+Global flags:
+  --json        For `exec`, print the final result event instead of the last assistant text
+  --cwd <path>  Resolve sessions and run exec in a different working directory
+
+Examples:
+  cursor-result exec "Fix the bug in main.ts"
+  cursor-result exec "Plan the migration" --mode plan
+  cursor-result exec "Implement the change" --trust --force
+  cursor-result session-id
+  cursor-result summary
+USAGE
+}
+
+need_command() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Error: required command not found: $1" >&2
+    exit 1
+  fi
+}
+
+project_cwd() {
+  if [[ -n "$CWD_OVERRIDE" ]]; then
+    printf '%s\n' "$CWD_OVERRIDE"
+  else
+    pwd -P
+  fi
+}
+
+project_slug() {
+  local cwd
+  cwd="$(project_cwd)"
+  cwd="${cwd#/}"
+  printf '%s\n' "${cwd//\//-}"
+}
+
+project_dir() {
+  printf '%s\n' "$CURSOR_PROJECTS_DIR/$(project_slug)"
+}
+
+latest_session_id() {
+  local dir="$(
+    printf '%s\n' "$(project_dir)/agent-transcripts"
+  )"
+
+  if [[ ! -d "$dir" ]]; then
+    echo "No Cursor transcript directory found for cwd: $(project_cwd)" >&2
+    return 1
+  fi
+
+  shopt -s nullglob
+  local files=("$dir"/*/*.jsonl)
+  shopt -u nullglob
+
+  local transcripts=()
+  local file
+  for file in "${files[@]}"; do
+    if [[ "$file" != *.stream.jsonl ]]; then
+      transcripts+=("$file")
+    fi
+  done
+
+  if [[ ${#transcripts[@]} -eq 0 ]]; then
+    echo "No Cursor transcripts found in: $dir" >&2
+    return 1
+  fi
+
+  local latest
+  latest="$(ls -t "${transcripts[@]}" 2>/dev/null | head -1 || true)"
+  if [[ -z "$latest" ]]; then
+    echo "No Cursor transcripts found in: $dir" >&2
+    return 1
+  fi
+
+  basename "$latest" .jsonl
+}
+
+resolve_session_id() {
+  local session_id="${1:-}"
+  if [[ -n "$session_id" ]]; then
+    printf '%s\n' "$session_id"
+  else
+    latest_session_id
+  fi
+}
+
+transcript_file() {
+  local session_id="$1"
+  printf '%s\n' "$(project_dir)/agent-transcripts/$session_id/$session_id.jsonl"
+}
+
+stream_file() {
+  local session_id="$1"
+  printf '%s\n' "$(project_dir)/agent-transcripts/$session_id/$session_id.stream.jsonl"
+}
+
+resolve_transcript_file() {
+  local session_id
+  session_id="$(resolve_session_id "${1:-}")" || return 1
+  local path
+  path="$(transcript_file "$session_id")"
+  if [[ ! -f "$path" ]]; then
+    echo "Cursor transcript not found: $session_id" >&2
+    return 1
+  fi
+  printf '%s\n' "$path"
+}
+
+resolve_stream_file() {
+  local session_id
+  session_id="$(resolve_session_id "${1:-}")" || return 1
+  local path
+  path="$(stream_file "$session_id")"
+  if [[ ! -f "$path" ]]; then
+    echo "Cursor stream file not found for session: $session_id" >&2
+    return 1
+  fi
+  printf '%s\n' "$path"
+}
+
+run_exec() {
+  need_command cursor-agent
+  need_command jq
+
+  if [[ $# -lt 1 ]]; then
+    echo "Error: exec requires a prompt" >&2
+    usage >&2
+    exit 1
+  fi
+
+  local prompt="$1"
+  shift
+
+  local temp_stream
+  temp_stream="$(mktemp "/tmp/cursor-result.XXXXXX.jsonl")"
+  local exit_code=0
+
+  (
+    cd "$(project_cwd)"
+    cursor-agent -p --output-format stream-json --trust "$@" "$prompt" >"$temp_stream"
+  ) || exit_code=$?
+
+  local session_id
+  session_id="$(jq -rs '[.[] | select(.type=="result") | .session_id] | last // empty' "$temp_stream")"
+
+  if [[ -n "$session_id" ]]; then
+    local stream_path
+    stream_path="$(stream_file "$session_id")"
+    mkdir -p "$(dirname "$stream_path")"
+    cp "$temp_stream" "$stream_path"
+  fi
+
+  if $RAW_JSON; then
+    jq -sc '[.[] | select(.type=="result")] | last // {}' "$temp_stream"
+  else
+    jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text] | last // empty' "$temp_stream"
+  fi
+
+  rm -f "$temp_stream"
+  return "$exit_code"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --json)
+      RAW_JSON=true
+      shift
+      ;;
+    --cwd)
+      CWD_OVERRIDE="${2:-}"
+      if [[ -z "$CWD_OVERRIDE" ]]; then
+        echo "Error: --cwd requires a path" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 0
+fi
+
+mode="$1"
+shift
+
+case "$mode" in
+  exec)
+    run_exec "$@"
+    ;;
+  last)
+    need_command jq
+    input="$(resolve_transcript_file "${1:-}")"
+    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input" | tail -1
+    ;;
+  messages)
+    need_command jq
+    input="$(resolve_transcript_file "${1:-}")"
+    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$input"
+    ;;
+  session-id)
+    resolve_session_id "${1:-}"
+    ;;
+  session-file)
+    resolve_transcript_file "${1:-}"
+    ;;
+  stream-file)
+    resolve_stream_file "${1:-}"
+    ;;
+  tools)
+    need_command jq
+    input="$(resolve_transcript_file "${1:-}")"
+    jq -c 'select(.role=="assistant") | .message.content[]? | select(.type=="tool_use") | {tool: .name, input: .input}' "$input"
+    ;;
+  commands)
+    need_command jq
+    input="$(resolve_stream_file "${1:-}")"
+    jq -sc '
+      def started:
+        [ .[]
+          | select(.type=="tool_call" and .subtype=="started" and .tool_call.shellToolCall != null)
+          | {key: .call_id, value: {cmd: .tool_call.shellToolCall.args.command, desc: .tool_call.shellToolCall.args.description}}
+        ] | from_entries;
+      def completed:
+        [ .[]
+          | select(.type=="tool_call" and .subtype=="completed" and .tool_call.shellToolCall != null)
+          | {
+              key: .call_id,
+              value: (
+                if .tool_call.shellToolCall.result.success != null then
+                  {
+                    status: "success",
+                    exit: .tool_call.shellToolCall.result.success.exitCode,
+                    stdout: .tool_call.shellToolCall.result.success.stdout,
+                    stderr: .tool_call.shellToolCall.result.success.stderr,
+                    out: .tool_call.shellToolCall.result.success.interleavedOutput
+                  }
+                elif .tool_call.shellToolCall.result.rejected != null then
+                  {
+                    status: "rejected",
+                    exit: null,
+                    stdout: null,
+                    stderr: null,
+                    out: null,
+                    reason: .tool_call.shellToolCall.result.rejected.reason,
+                    is_readonly: .tool_call.shellToolCall.result.rejected.isReadonly
+                  }
+                else
+                  {}
+                end
+              )
+            }
+        ] | from_entries;
+      (started) as $started
+      | (completed) as $completed
+      | ($started | keys[]) as $id
+      | ($started[$id] + ($completed[$id] // {}))
+    ' "$input"
+    ;;
+  reasoning)
+    need_command jq
+    input="$(resolve_stream_file "${1:-}")"
+    jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="thinking") | .text // .thinking' "$input"
+    ;;
+  usage)
+    need_command jq
+    input="$(resolve_stream_file "${1:-}")"
+    jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$input"
+    ;;
+  summary)
+    need_command jq
+    sid="$(resolve_session_id "${1:-}")"
+    stream="$(resolve_stream_file "$sid")"
+    transcript="$(resolve_transcript_file "$sid")"
+    echo "SESSION: $sid"
+    echo "MODEL: $(jq -rs '[.[] | select(.type=="system" and .subtype=="init") | .model] | last // empty' "$stream")"
+    echo "USAGE: $(jq -sc '[.[] | select(.type=="result") | .usage] | last // {}' "$stream")"
+    echo "---"
+    jq -r 'select(.role=="assistant") | .message.content[]? | select(.type=="text") | .text' "$transcript" | tail -1
+    ;;
+  *)
+    echo "Unknown mode: $mode" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

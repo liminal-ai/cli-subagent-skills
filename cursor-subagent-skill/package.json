@@ -1,0 +1,12 @@
+{
+  "name": "cursor-subagent-skill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-artifacts.mjs",
+    "deploy": "node scripts/deploy-local.mjs",
+    "release:local": "node scripts/release-local.mjs",
+    "verify": "node scripts/verify.mjs"
+  }
+}

@@ -17,3 +17,11 @@ The root repository is only responsible for grouping them together in one place.
 - Existing package layouts are preserved to minimize churn.
 - Tooling is still package-local for now.
 - Future CLI subagent skills can be added alongside these packages.
+
+## Smoke tests
+
+Run all runtime smoke tests from the monorepo root:
+
+```bash
+bash scripts/smoke-test-all.sh
+```
