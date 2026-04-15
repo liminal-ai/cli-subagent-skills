@@ -67,7 +67,7 @@ codex-result messages /tmp/codex-out.jsonl
 codex-result session-id /tmp/codex-out.jsonl   # Thread ID for resume
 codex-result usage /tmp/codex-out.jsonl         # Token counts
 codex-result commands /tmp/codex-out.jsonl      # Commands + exit codes + output
-codex-result reasoning /tmp/codex-out.jsonl     # Thinking summaries
+codex-result reasoning /tmp/codex-out.jsonl     # Thinking summaries (often empty with current CLI builds)
 codex-result summary /tmp/codex-out.jsonl       # Session ID + tokens + last message
 ```
 

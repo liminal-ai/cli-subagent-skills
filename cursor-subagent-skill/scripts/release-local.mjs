@@ -63,7 +63,7 @@ async function main() {
   console.log("1. git push origin <branch>");
   console.log(`2. git push origin ${tag}`);
   console.log(`3. Create GitHub release for ${tag}`);
-  console.log("4. Upload dist/*.zip and dist/*.skill");
+  console.log("4. Upload dist/*.zip");
 }
 
 await main();

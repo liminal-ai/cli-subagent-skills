@@ -1,0 +1,15 @@
+Read inputs/source.txt.
+Create outputs/sonnet/acceptEdits/created.txt containing exactly:
+created from source token ALPHA-42
+
+Edit inputs/edit-target.md in place:
+- replace the line "PLACEHOLDER: REPLACE_ME" with "PLACEHOLDER: replaced with ALPHA-42"
+- append the bullet "- added from source token ALPHA-42"
+
+Create outputs/sonnet/acceptEdits/nested/result.json containing valid JSON with:
+- "sourceToken": "ALPHA-42"
+- "status": "written"
+- "mode": "acceptEdits"
+- "model": "claude-sonnet-4-6"
+
+Then return a short summary stating whether each requested write was completed.

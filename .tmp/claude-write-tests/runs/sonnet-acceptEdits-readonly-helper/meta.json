@@ -1,0 +1,18 @@
+{
+  "run_name": "sonnet-acceptEdits-readonly-helper",
+  "runner": "helper",
+  "model_id": "claude-sonnet-4-6",
+  "mode": "acceptEdits",
+  "allowed_tools": "Read,Grep,Glob",
+  "exit_status": 0,
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "session_id": "8af1dbf1-b99a-4a0b-89dd-4b6402b3f99d",
+  "result_text": "All four requested operations completed:\n\n- **`outputs/sonnet/acceptEdits/created.txt`** — created with `created from source token ALPHA-42`\n- **`inputs/edit-target.md` placeholder replacement** — `PLACEHOLDER: REPLACE_ME` replaced with `PLACEHOLDER: replaced with ALPHA-42`\n- **`inputs/edit-target.md` bullet append** — `- added from source token ALPHA-42` appended\n- **`outputs/sonnet/acceptEdits/nested/result.json`** — created with valid JSON containing all four required fields",
+  "validation": {
+    "created_matches": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  }
+}

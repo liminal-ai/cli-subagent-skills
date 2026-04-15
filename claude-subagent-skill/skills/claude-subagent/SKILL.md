@@ -39,8 +39,10 @@ effort level, agent, permission mode, or tool profile.
 
 - Prefer `claude-result exec "prompt" ...` over calling `claude -p` directly.
 - `--allowedTools` is variadic. If you pass flags directly to `claude`, place the prompt after `--` or pipe it on stdin. The helper handles this safely for you.
+- `--allowedTools` should be treated as a runtime preference, not a hard security boundary. In testing, Claude still reached for tools outside the requested set in some runs.
 - Do **not** default to `--bare`. It can disable the auth path used by a normal Claude Code install and may fail with `Not logged in`.
 - Claude's final JSON result goes to stdout, but richer inspection comes from the saved session log under `~/.claude/projects/...`.
+- If multiple Claude sessions share the same cwd, `claude-result session-id` can resolve to the wrong one. For automation, always carry the explicit `session_id` returned by `--json exec`.
 
 ## Output Strategy (Tiered)
 

@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "haiku",
+  "model_id": "claude-haiku-4-5",
+  "mode": "bypassPermissions",
+  "exit_status": 0,
+  "session_id": "cceb289e-5225-411d-9665-aaed3a0cfd90",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "## Summary\n\nAll requested operations completed successfully:\n\n✅ **Created outputs/haiku/bypassPermissions/created.txt** — written with content \"created from source token ALPHA-42\"\n\n✅ **Edited inputs/edit-target.md** — replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\" and appended \"- added from source token ALPHA-42\"\n\n✅ **Created outputs/haiku/bypassPermissions/nested/result.json** — written with valid JSON containing sourceToken, status, mode, and model fields",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/command.txt"
+  }
+}

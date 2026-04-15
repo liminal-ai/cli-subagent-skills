@@ -1,0 +1,6 @@
+{
+  "sourceToken": "ALPHA-42",
+  "status": "written",
+  "mode": "bypassPermissions",
+  "model": "claude-haiku-4-5"
+}

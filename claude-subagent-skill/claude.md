@@ -20,8 +20,8 @@ When publishing any new version to GitHub, you must manually upload release arti
    - `git push origin claude-subagent-v<version>`
 5. Publish artifacts to GitHub Release:
    - If creating new release:
-     - `gh release create claude-subagent-v<version> dist/claude-subagent-v<version>.zip dist/claude-subagent-v<version>.skill --repo <owner>/<monorepo> --title "claude-subagent v<version>" --notes "Release claude-subagent v<version>."`
+     - `gh release create claude-subagent-v<version> dist/claude-subagent-v<version>.zip --repo <owner>/<monorepo> --title "claude-subagent v<version>" --notes "Release claude-subagent v<version>."`
    - If release already exists:
-     - `gh release upload claude-subagent-v<version> dist/claude-subagent-v<version>.zip dist/claude-subagent-v<version>.skill --repo <owner>/<monorepo> --clobber`
+     - `gh release upload claude-subagent-v<version> dist/claude-subagent-v<version>.zip --repo <owner>/<monorepo> --clobber`
 
-Do not mark a release complete until both `.zip` and `.skill` assets are attached.
+Do not mark a release complete until the `.zip` asset is attached.

@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "sonnet",
+  "model_id": "claude-sonnet-4-6",
+  "mode": "bypassPermissions",
+  "exit_status": 0,
+  "session_id": "d0793fe1-4fcc-43c5-9575-269f7af7889d",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "All requested writes completed:\n\n| Task | Result |\n|------|--------|\n| `outputs/sonnet/bypassPermissions/created.txt` | Created with `created from source token ALPHA-42` |\n| `inputs/edit-target.md` — replace placeholder | Done: `PLACEHOLDER: replaced with ALPHA-42` |\n| `inputs/edit-target.md` — append bullet | Done: `- added from source token ALPHA-42` appended |\n| `outputs/sonnet/bypassPermissions/nested/result.json` | Created with valid JSON containing all four required fields |",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/command.txt"
+  }
+}

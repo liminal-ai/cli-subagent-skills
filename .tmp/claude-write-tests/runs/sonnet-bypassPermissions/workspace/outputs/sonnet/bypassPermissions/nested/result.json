@@ -1,0 +1,6 @@
+{
+  "sourceToken": "ALPHA-42",
+  "status": "written",
+  "mode": "bypassPermissions",
+  "model": "claude-sonnet-4-6"
+}

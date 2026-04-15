@@ -15,7 +15,7 @@ Modes:
   session-id  Thread/session ID
   usage       Token counts (JSON)
   commands    Commands run with exit codes (JSON, one per line)
-  reasoning   Reasoning/thinking summaries
+  reasoning   Reasoning/thinking summaries (may be empty with current Codex CLI builds)
   summary     Session ID + token usage + last message (compact overview)
 
 Examples:

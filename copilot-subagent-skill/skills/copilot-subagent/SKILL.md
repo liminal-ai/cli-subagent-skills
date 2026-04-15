@@ -33,7 +33,7 @@ These are already set — no need to pass flags for default behavior:
 
 | Setting | Value |
 |---------|-------|
-| Model | `gpt-5.3-codex` |
+| Model | `gpt-5.4` |
 | Reasoning effort | `high` |
 
 Override model with `--model <name>`. No flag exists for reasoning effort — it's config-only.
@@ -91,6 +91,22 @@ copilot-result tools <session-id>
 For automated callers, prefer `copilot-result --json exec ...` and carry the returned `session_id`
 forward explicitly. Treat `copilot-result session-id` as a convenience for human workflows.
 
+### Automation Note
+
+For machine-readable workflows, the safest pattern is to redirect `--json exec` output to a file and
+then read fields with `jq`. Tool-using Copilot sessions can still emit PTY-dependent progress noise in
+some caller setups, and file redirect remains the most reliable pattern.
+
+```bash
+# Safe pattern
+copilot-result --json exec "prompt" --allow-all > /tmp/copilot-result.json 2>/dev/null
+SID="$(jq -r '.session_id' /tmp/copilot-result.json)"
+RESULT="$(jq -r '.result' /tmp/copilot-result.json)"
+
+# Less reliable for tool-using sessions in PTY-heavy wrappers
+json="$(copilot-result --json exec 'prompt' --allow-all 2>/dev/null)"
+```
+
 ### Extraction Helper
 
 Use `~/.claude/skills/copilot-subagent/scripts/copilot-result` for all operations:
@@ -118,6 +134,9 @@ cd /path/to/project && copilot-result exec "your prompt" --allow-all 2>/dev/null
 Response goes to stdout. Session JSONL saved automatically for later extraction.
 
 ### 2) Asynchronous (background, poll later)
+
+If you're calling this from an outer Bash tool that already supports `run_in_background`, do not also add shell `&`.
+Use one backgrounding mechanism, not both.
 
 ```bash
 cd /path/to/project && copilot-result exec "your prompt" --allow-all > /tmp/copilot-async.txt 2>/dev/null &
@@ -223,7 +242,7 @@ Available via `--model`:
 
 | Model | Use case |
 |-------|----------|
-| `gpt-5.3-codex` | **Default.** Code-optimized, strongest reasoning |
+| `gpt-5.4` | **Default on this machine.** Strongest general coding performance in current tests |
 | `gpt-5.2` | General, strong. Good for non-code tasks |
 
 ### All available models
@@ -234,7 +253,8 @@ Available via `--model`:
 | `claude-sonnet-4.6` | Balanced Claude |
 | `claude-sonnet-4.5` | Previous gen Claude |
 | `claude-haiku-4.5` | Fast, cheap Claude |
-| `gpt-5.3-codex` | Code-optimized, default |
+| `gpt-5.4` | Current default on this machine |
+| `gpt-5.3-codex` | Code-optimized |
 | `gpt-5.2-codex` | Code-optimized |
 | `gpt-5.2` | General |
 | `gpt-5.1-codex-max` | Maximum reasoning |
@@ -326,7 +346,7 @@ Copilot persists sessions at `~/.copilot/session-state/<session-id>/`. Each sess
 - One goal per agent. Narrow scope = better results.
 - Provide exact file paths when possible, not "look through the codebase."
 - For structured output, specify the format in the prompt.
-- Keep prompts concise — gpt-5.3-codex at high reasoning doesn't need hand-holding.
+- Keep prompts concise — gpt-5.4 at high reasoning doesn't need hand-holding.
 
 ## Quick Reference
 

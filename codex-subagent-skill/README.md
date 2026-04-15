@@ -6,7 +6,7 @@ This package is the source of truth for the `codex-subagent` skill inside the `c
 
 It provides Bun scripts to:
 
-- build `.zip` and `.skill` distributables
+- build a versioned `.zip` plus an expanded `dist/codex-subagent/` directory
 - deploy the skill into `~/.claude/skills`
 - run a local release flow with version tags
 
@@ -42,7 +42,7 @@ codex-subagent-skill/
 3. Run `bun run build` to produce distributables.
 4. Run `bun run deploy` to install locally for Claude Code.
 
-## Build artifacts (`.zip` and `.skill`)
+## Build artifacts (`.zip` and expanded skill directory)
 
 Build command:
 
@@ -53,11 +53,11 @@ bun run build
 For `v0.1.0`, this produces:
 
 - `dist/codex-subagent-v0.1.0.zip`
-- `dist/codex-subagent-v0.1.0.skill`
+- `dist/codex-subagent/`
 
 Notes:
 
-- `.skill` is a renamed copy of the `.zip` payload.
+- `dist/codex-subagent/` mirrors the packaged skill directory for local inspection and install testing.
 - archive root is `codex-subagent/`.
 - required entries:
   - `codex-subagent/SKILL.md`
@@ -113,12 +113,11 @@ Manual process:
 1. `bun run release:local`
 2. `git push origin <branch>`
 3. `git push origin codex-subagent-v<version>`
-4. create a GitHub Release and upload artifacts in one step:
+4. create a GitHub Release and upload the `.zip` artifact:
 
 ```bash
 gh release create codex-subagent-v<version> \
   dist/codex-subagent-v<version>.zip \
-  dist/codex-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --title "codex-subagent v<version>" \
   --notes "Release codex-subagent v<version>."
@@ -129,7 +128,6 @@ If the release already exists, upload/replace assets:
 ```bash
 gh release upload codex-subagent-v<version> \
   dist/codex-subagent-v<version>.zip \
-  dist/codex-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --clobber
 ```

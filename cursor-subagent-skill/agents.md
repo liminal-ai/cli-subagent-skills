@@ -10,9 +10,11 @@ Maintain packaging/deployment scripts and release process for the `cursor-subage
 
 `dist/` artifacts are ignored by git by default. Every version pushed to GitHub must include manual release asset upload.
 
-Required assets per version tag `cursor-subagent-vX.Y.Z`:
+Required release asset per version tag `cursor-subagent-vX.Y.Z`:
 - `dist/cursor-subagent-vX.Y.Z.zip`
-- `dist/cursor-subagent-vX.Y.Z.skill`
+
+Local build output should also include:
+- `dist/cursor-subagent/`
 
 ## Required Commands For Any New Version
 
@@ -22,8 +24,8 @@ Required assets per version tag `cursor-subagent-vX.Y.Z`:
 4. `git push origin <branch>`
 5. `git push origin cursor-subagent-vX.Y.Z`
 6. Upload release assets:
-   - `gh release create cursor-subagent-vX.Y.Z dist/cursor-subagent-vX.Y.Z.zip dist/cursor-subagent-vX.Y.Z.skill --repo <owner>/<monorepo> --title "cursor-subagent vX.Y.Z" --notes "Release cursor-subagent vX.Y.Z."`
+   - `gh release create cursor-subagent-vX.Y.Z dist/cursor-subagent-vX.Y.Z.zip --repo <owner>/<monorepo> --title "cursor-subagent vX.Y.Z" --notes "Release cursor-subagent vX.Y.Z."`
    - or, if the release exists:
-   - `gh release upload cursor-subagent-vX.Y.Z dist/cursor-subagent-vX.Y.Z.zip dist/cursor-subagent-vX.Y.Z.skill --repo <owner>/<monorepo> --clobber`
+   - `gh release upload cursor-subagent-vX.Y.Z dist/cursor-subagent-vX.Y.Z.zip --repo <owner>/<monorepo> --clobber`
 
-Never finish a release without verifying both assets are visible on the GitHub Release page.
+Never finish a release without verifying the `.zip` asset is visible on the GitHub Release page.

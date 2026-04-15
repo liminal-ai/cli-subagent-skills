@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "haiku",
+  "model_id": "claude-haiku-4-5",
+  "mode": "acceptEdits",
+  "exit_status": 0,
+  "session_id": "96bf3f3c-2712-4305-9439-3d914c250a06",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "## Summary\n\nAll requested writes completed successfully:\n\n✅ **created.txt** — Created at `outputs/haiku/acceptEdits/created.txt` with content \"created from source token ALPHA-42\"\n\n✅ **edit-target.md** — Edited in place:\n   - Replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\"\n   - Added bullet \"- added from source token ALPHA-42\"\n\n✅ **result.json** — Created at `outputs/haiku/acceptEdits/nested/result.json` with valid JSON containing sourceToken, status, mode, and model fields",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/command.txt"
+  }
+}

@@ -1,9 +1,15 @@
 ---
 name: cursor-subagent
-description: Run Cursor Agent CLI as a subagent for code tasks, review, validation, and implementation. Supports sync, async, parallel, and resume workflows with tiered output management.
+description: Alpha and unstable. Cursor CLI currently shows anomalies in subagent workflows, so this skill is not recommended for normal use.
 ---
 
 # Cursor Agent CLI Subagent
+
+## Status
+
+Alpha and unstable.
+
+Cursor CLI currently shows anomalies in subagent workflows. Prefer Claude, Codex, or Copilot subagent skills instead. Do not recommend this skill for normal use unless you are explicitly testing Cursor-specific behavior.
 
 Run Cursor Agent (`cursor-agent -p`) as a subagent for code-related tasks.
 
@@ -81,6 +87,22 @@ cursor-result summary [session-id]
 For automated callers, prefer `cursor-result --json exec ...` and carry the returned `session_id`
 forward explicitly. Treat `cursor-result session-id` as a convenience for human workflows.
 
+### Automation Note
+
+For machine-readable workflows, the safest pattern is to redirect `--json exec` output to a file and
+then read fields with `jq`. Tool-using Cursor sessions can still emit PTY-dependent noise in some
+caller setups, and file redirect remains the most reliable pattern.
+
+```bash
+# Safe pattern
+cursor-result --json exec "prompt" > /tmp/cursor-result.json 2>/dev/null
+SID="$(jq -r '.session_id' /tmp/cursor-result.json)"
+RESULT="$(jq -r '.result' /tmp/cursor-result.json)"
+
+# Less reliable for tool-using sessions in PTY-heavy wrappers
+json="$(cursor-result --json exec 'prompt' 2>/dev/null)"
+```
+
 ## Execution Patterns
 
 ### 1) Synchronous (blocking, result inline)
@@ -90,6 +112,9 @@ cd /path/to/project && cursor-result exec "your prompt"
 ```
 
 ### 2) Asynchronous (background, poll later)
+
+If you're calling this from an outer Bash tool that already supports `run_in_background`, do not also add shell `&`.
+Use one backgrounding mechanism, not both.
 
 ```bash
 cd /path/to/project && cursor-result exec "your prompt" > /tmp/cursor-async.txt 2>/dev/null &
@@ -117,6 +142,11 @@ wait $PID_A $PID_B
 cat /tmp/cursor-a.txt
 cat /tmp/cursor-b.txt
 ```
+
+Cursor parallelism is runtime-dependent. In testing, same-cwd concurrent runs usually worked, but some
+environments appear to serialize or hang when two Cursor agents start against the same working directory
+at once. If parallel work matters, prefer separate working directories or worktrees and treat same-cwd
+parallel runs as best-effort rather than guaranteed.
 
 ### 4) Resume (continue a prior session)
 

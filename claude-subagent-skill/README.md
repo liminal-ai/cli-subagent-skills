@@ -6,7 +6,7 @@ This package is the source of truth for the `claude-subagent` skill inside the `
 
 It provides scripts to:
 
-- build `.zip` and `.skill` distributables
+- build a versioned `.zip` plus an expanded `dist/claude-subagent/` directory
 - deploy the skill into `~/.claude/skills`
 - run a local release flow with version tags
 
@@ -42,7 +42,7 @@ claude-subagent-skill/
 3. Run `npm run build` to produce distributables.
 4. Run `npm run deploy` to install locally for Claude Code.
 
-## Build artifacts (`.zip` and `.skill`)
+## Build artifacts (`.zip` and expanded skill directory)
 
 Build command:
 
@@ -53,11 +53,11 @@ npm run build
 For `v0.1.0`, this produces:
 
 - `dist/claude-subagent-v0.1.0.zip`
-- `dist/claude-subagent-v0.1.0.skill`
+- `dist/claude-subagent/`
 
 Notes:
 
-- `.skill` is a renamed copy of the `.zip` payload.
+- `dist/claude-subagent/` mirrors the packaged skill directory for local inspection and install testing.
 - archive root is `claude-subagent/`.
 - required entries:
   - `claude-subagent/SKILL.md`
@@ -113,12 +113,11 @@ Manual process:
 1. `npm run release:local`
 2. `git push origin <branch>`
 3. `git push origin claude-subagent-v<version>`
-4. create a GitHub Release and upload artifacts in one step:
+4. create a GitHub Release and upload the `.zip` artifact:
 
 ```bash
 gh release create claude-subagent-v<version> \
   dist/claude-subagent-v<version>.zip \
-  dist/claude-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --title "claude-subagent v<version>" \
   --notes "Release claude-subagent v<version>."
@@ -129,7 +128,6 @@ If the release already exists, upload/replace assets:
 ```bash
 gh release upload claude-subagent-v<version> \
   dist/claude-subagent-v<version>.zip \
-  dist/claude-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --clobber
 ```

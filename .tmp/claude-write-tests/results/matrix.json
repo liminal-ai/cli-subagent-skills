@@ -1,0 +1,250 @@
+{
+  "core_runs": [
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "haiku",
+        "model_id": "claude-haiku-4-5",
+        "mode": "acceptEdits",
+        "exit_status": 0,
+        "session_id": "96bf3f3c-2712-4305-9439-3d914c250a06",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "## Summary\n\nAll requested writes completed successfully:\n\n✅ **created.txt** — Created at `outputs/haiku/acceptEdits/created.txt` with content \"created from source token ALPHA-42\"\n\n✅ **edit-target.md** — Edited in place:\n   - Replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\"\n   - Added bullet \"- added from source token ALPHA-42\"\n\n✅ **result.json** — Created at `outputs/haiku/acceptEdits/nested/result.json` with valid JSON containing sourceToken, status, mode, and model fields",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-acceptEdits/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    },
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "haiku",
+        "model_id": "claude-haiku-4-5",
+        "mode": "bypassPermissions",
+        "exit_status": 0,
+        "session_id": "cceb289e-5225-411d-9665-aaed3a0cfd90",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "## Summary\n\nAll requested operations completed successfully:\n\n✅ **Created outputs/haiku/bypassPermissions/created.txt** — written with content \"created from source token ALPHA-42\"\n\n✅ **Edited inputs/edit-target.md** — replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\" and appended \"- added from source token ALPHA-42\"\n\n✅ **Created outputs/haiku/bypassPermissions/nested/result.json** — written with valid JSON containing sourceToken, status, mode, and model fields",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    },
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "opus",
+        "model_id": "claude-opus-4-6",
+        "mode": "acceptEdits",
+        "exit_status": 0,
+        "session_id": "fed5e7d2-1bff-4b2d-87dd-d2bde24cb174",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "All four operations completed successfully:\n\n1. **`outputs/opus/acceptEdits/created.txt`** — created with exact line `created from source token ALPHA-42`\n2. **`inputs/edit-target.md` placeholder** — replaced `REPLACE_ME` with `replaced with ALPHA-42`\n3. **`inputs/edit-target.md` bullet** — appended `- added from source token ALPHA-42`\n4. **`outputs/opus/acceptEdits/nested/result.json`** — created with all four required JSON fields",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    },
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "opus",
+        "model_id": "claude-opus-4-6",
+        "mode": "bypassPermissions",
+        "exit_status": 0,
+        "session_id": "042d8ce1-9464-406c-94e9-859581acc77a",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "All four operations completed successfully:\n\n1. **Read** `inputs/source.txt` — read source token ALPHA-42.\n2. **Created** `outputs/opus/bypassPermissions/created.txt` — contains exactly `created from source token ALPHA-42`.\n3. **Edited** `inputs/edit-target.md` — replaced `PLACEHOLDER: REPLACE_ME` with `PLACEHOLDER: replaced with ALPHA-42` and appended `- added from source token ALPHA-42`.\n4. **Created** `outputs/opus/bypassPermissions/nested/result.json` — valid JSON with all four required fields.",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    },
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "sonnet",
+        "model_id": "claude-sonnet-4-6",
+        "mode": "acceptEdits",
+        "exit_status": 0,
+        "session_id": "d5343ee5-5598-448a-af04-08a08886f7c5",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "All three writes completed successfully:\n\n- **outputs/sonnet/acceptEdits/created.txt** — created with `created from source token ALPHA-42`\n- **inputs/edit-target.md** — placeholder line replaced and bullet appended\n- **outputs/sonnet/acceptEdits/nested/result.json** — created with the required JSON fields",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    },
+    {
+      "helper": {
+        "runner": "helper",
+        "model_slug": "sonnet",
+        "model_id": "claude-sonnet-4-6",
+        "mode": "bypassPermissions",
+        "exit_status": 0,
+        "session_id": "d0793fe1-4fcc-43c5-9575-269f7af7889d",
+        "parsed_json": true,
+        "agent_claimed_success": true,
+        "timed_out": false,
+        "result_text": "All requested writes completed:\n\n| Task | Result |\n|------|--------|\n| `outputs/sonnet/bypassPermissions/created.txt` | Created with `created from source token ALPHA-42` |\n| `inputs/edit-target.md` — replace placeholder | Done: `PLACEHOLDER: replaced with ALPHA-42` |\n| `inputs/edit-target.md` — append bullet | Done: `- added from source token ALPHA-42` appended |\n| `outputs/sonnet/bypassPermissions/nested/result.json` | Created with valid JSON containing all four required fields |",
+        "rubric": "PASS",
+        "validation": {
+          "created_exists": true,
+          "created_matches": true,
+          "nested_exists": true,
+          "nested_matches": true,
+          "edit_matches": true,
+          "writes_happened": true
+        },
+        "artifacts": {
+          "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/stdout.txt",
+          "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/stderr.txt",
+          "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-bypassPermissions/command.txt"
+        }
+      },
+      "direct_control": null,
+      "final_rubric": "PASS"
+    }
+  ],
+  "supplemental_runs": [
+    {
+      "run_name": "sonnet-acceptEdits-readonly-helper",
+      "runner": "helper",
+      "model_id": "claude-sonnet-4-6",
+      "mode": "acceptEdits",
+      "allowed_tools": "Read,Grep,Glob",
+      "exit_status": 0,
+      "parsed_json": true,
+      "agent_claimed_success": true,
+      "session_id": "8af1dbf1-b99a-4a0b-89dd-4b6402b3f99d",
+      "result_text": "All four requested operations completed:\n\n- **`outputs/sonnet/acceptEdits/created.txt`** — created with `created from source token ALPHA-42`\n- **`inputs/edit-target.md` placeholder replacement** — `PLACEHOLDER: REPLACE_ME` replaced with `PLACEHOLDER: replaced with ALPHA-42`\n- **`inputs/edit-target.md` bullet append** — `- added from source token ALPHA-42` appended\n- **`outputs/sonnet/acceptEdits/nested/result.json`** — created with valid JSON containing all four required fields",
+      "validation": {
+        "created_matches": true,
+        "nested_matches": true,
+        "edit_matches": true,
+        "writes_happened": true
+      },
+      "scenario": "allowed_tools_boundary_check",
+      "final_rubric": "PASS",
+      "notable_finding": "Writes still happened even though allowedTools was restricted to Read,Grep,Glob.",
+      "tool_trace_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits-readonly-helper/tool-trace.jsonl"
+    },
+    {
+      "run_name": "sonnet-acceptEdits-direct-control",
+      "runner": "direct",
+      "model_id": "claude-sonnet-4-6",
+      "mode": "acceptEdits",
+      "allowed_tools": "Read,Write,Edit,Bash,Grep,Glob",
+      "exit_status": 0,
+      "parsed_json": true,
+      "agent_claimed_success": true,
+      "session_id": "0f4cc991-bfe9-4e88-9b93-079583343333",
+      "result_text": "All three writes completed successfully:\n\n- **`outputs/sonnet/acceptEdits/created.txt`** — created with `created from source token ALPHA-42`\n- **`inputs/edit-target.md`** — placeholder line replaced and bullet appended\n- **`outputs/sonnet/acceptEdits/nested/result.json`** — created with the required JSON fields",
+      "validation": {
+        "created_matches": true,
+        "nested_matches": true,
+        "edit_matches": true,
+        "writes_happened": true
+      },
+      "scenario": "direct_claude_positive_control",
+      "final_rubric": "PASS",
+      "notable_finding": "Direct claude -p write control succeeded with the same model and task."
+    },
+    {
+      "run_name": "haiku-acceptEdits-helper-rerun",
+      "runner": "helper",
+      "model_id": "claude-haiku-4-5",
+      "mode": "acceptEdits",
+      "allowed_tools": "Read,Write,Edit,Bash,Grep,Glob",
+      "exit_status": 0,
+      "parsed_json": true,
+      "agent_claimed_success": true,
+      "session_id": "cbb0a9e9-597f-4adc-8038-1f9c2ba3b60f",
+      "result_text": "## Summary\n\nAll requested writes completed successfully:\n\n✅ **created.txt** — Created at `outputs/haiku/acceptEdits/created.txt` with content \"created from source token ALPHA-42\"\n\n✅ **edit-target.md** — Two edits completed:\n  - Replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\"\n  - Appended \"- added from source token ALPHA-42\" to the bullet list\n\n✅ **result.json** — Created at `outputs/haiku/acceptEdits/nested/result.json` with valid JSON containing sourceToken, status, mode, and model fields",
+      "validation": {
+        "created_matches": true,
+        "nested_matches": true,
+        "edit_matches": true,
+        "writes_happened": true
+      },
+      "scenario": "haiku_repeatability_check",
+      "final_rubric": "PASS",
+      "notable_finding": "Second helper run for Haiku acceptEdits also succeeded."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "run_name": "haiku-acceptEdits-helper-rerun",
+  "runner": "helper",
+  "model_id": "claude-haiku-4-5",
+  "mode": "acceptEdits",
+  "allowed_tools": "Read,Write,Edit,Bash,Grep,Glob",
+  "exit_status": 0,
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "session_id": "cbb0a9e9-597f-4adc-8038-1f9c2ba3b60f",
+  "result_text": "## Summary\n\nAll requested writes completed successfully:\n\n✅ **created.txt** — Created at `outputs/haiku/acceptEdits/created.txt` with content \"created from source token ALPHA-42\"\n\n✅ **edit-target.md** — Two edits completed:\n  - Replaced \"PLACEHOLDER: REPLACE_ME\" with \"PLACEHOLDER: replaced with ALPHA-42\"\n  - Appended \"- added from source token ALPHA-42\" to the bullet list\n\n✅ **result.json** — Created at `outputs/haiku/acceptEdits/nested/result.json` with valid JSON containing sourceToken, status, mode, and model fields",
+  "validation": {
+    "created_matches": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  }
+}

@@ -82,6 +82,17 @@ resolve_jsonl() {
   fi
 }
 
+sanitize_json_stream() {
+  perl -0pe '
+    s/\e\][^\a]*(?:\a|\e\\)//gs;
+    s/\eP(?:.|\n)*?\e\\//gs;
+    s/\e\[[0-?]*[ -\/]*[@-~]//gs;
+    s/\e[@-_]//gs;
+    s/\r(?!\n)//g;
+    s/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]//g;
+  ' | awk '/^[[:space:]]*{/'
+}
+
 # Parse global flags
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -108,14 +119,16 @@ case "$mode" in
     shift
     # Caller passes permission flags (--allow-all, --allow-tool, etc.)
     if $RAW_JSON; then
+      tmp_raw="$(mktemp /tmp/copilot-result-raw.XXXXXX)"
       tmp_jsonl="$(mktemp /tmp/copilot-result.XXXXXX)"
       exec_args=(-p "$prompt" --output-format json)
       if ! $RAW_TOOLS; then
         exec_args+=(--disable-builtin-mcps --available-tools "${DEFAULT_AVAILABLE_TOOLS[@]}")
       fi
       exec_args+=("$@")
-      $cmd "${exec_args[@]}" >"$tmp_jsonl"
-      jq -sc '{
+      TERM=dumb NO_COLOR=1 CLICOLOR=0 FORCE_COLOR=0 $cmd "${exec_args[@]}" </dev/null >"$tmp_raw"
+      sanitize_json_stream <"$tmp_raw" >"$tmp_jsonl"
+      if ! jq -sc '{
         session_id: (([.[] | select(.type=="session.start") | .data.sessionId] | last) // ([.[] | select(.type=="result") | .sessionId] | last) // ""),
         model: (([.[] | select(.type=="session.model_change") | .data.newModel] | last) // ([.[] | select(.type=="session.tools_updated") | .data.model] | last) // ""),
         result: ([.[] | select(.type=="assistant.message" and .data.content != "") | .data.content] | last // ""),
@@ -124,8 +137,12 @@ case "$mode" in
           ((([.[] | select(.type=="session.start") | .data.sessionId] | last) // ([.[] | select(.type=="result") | .sessionId] | last) // "") ) as $sid
           | if $sid == "" then null else "'$SESSION_DIR'/" + $sid + "/events.jsonl" end
         )
-      }' "$tmp_jsonl"
-      rm -f "$tmp_jsonl"
+      }' "$tmp_jsonl"; then
+        rm -f "$tmp_raw" "$tmp_jsonl"
+        echo "Failed to parse Copilot JSON output after sanitization." >&2
+        exit 1
+      fi
+      rm -f "$tmp_raw" "$tmp_jsonl"
     else
       exec_args=(-p "$prompt" -s)
       if ! $RAW_TOOLS; then

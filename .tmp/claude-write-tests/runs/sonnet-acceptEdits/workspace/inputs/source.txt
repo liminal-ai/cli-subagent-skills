@@ -1,0 +1,4 @@
+Deterministic source fixture for Claude write tests.
+Source token: ALPHA-42
+Required created line: created from source token ALPHA-42
+Required bullet: - added from source token ALPHA-42

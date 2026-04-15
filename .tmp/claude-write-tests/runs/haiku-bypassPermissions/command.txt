@@ -1,0 +1,15 @@
+/Users/leemoore/.claude/skills/claude-subagent/scripts/claude-result --cwd /Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/haiku-bypassPermissions/workspace --json exec "Read inputs/source.txt.
+Create outputs/haiku/bypassPermissions/created.txt containing exactly:
+created from source token ALPHA-42
+
+Edit inputs/edit-target.md in place:
+- replace the line "PLACEHOLDER: REPLACE_ME" with "PLACEHOLDER: replaced with ALPHA-42"
+- append the bullet "- added from source token ALPHA-42"
+
+Create outputs/haiku/bypassPermissions/nested/result.json containing valid JSON with:
+- "sourceToken": "ALPHA-42"
+- "status": "written"
+- "mode": "bypassPermissions"
+- "model": "claude-haiku-4-5"
+
+Then return a short summary stating whether each requested write was completed." --model claude-haiku-4-5 --permission-mode bypassPermissions --allowedTools Read,Write,Edit,Bash,Grep,Glob

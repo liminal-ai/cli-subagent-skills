@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "opus",
+  "model_id": "claude-opus-4-6",
+  "mode": "bypassPermissions",
+  "exit_status": 0,
+  "session_id": "042d8ce1-9464-406c-94e9-859581acc77a",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "All four operations completed successfully:\n\n1. **Read** `inputs/source.txt` — read source token ALPHA-42.\n2. **Created** `outputs/opus/bypassPermissions/created.txt` — contains exactly `created from source token ALPHA-42`.\n3. **Edited** `inputs/edit-target.md` — replaced `PLACEHOLDER: REPLACE_ME` with `PLACEHOLDER: replaced with ALPHA-42` and appended `- added from source token ALPHA-42`.\n4. **Created** `outputs/opus/bypassPermissions/nested/result.json` — valid JSON with all four required fields.",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-bypassPermissions/command.txt"
+  }
+}

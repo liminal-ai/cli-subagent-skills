@@ -6,7 +6,7 @@ This package is the source of truth for the `copilot-subagent` skill inside the 
 
 It provides Bun scripts to:
 
-- build `.zip` and `.skill` distributables
+- build a versioned `.zip` plus an expanded `dist/copilot-subagent/` directory
 - deploy the skill into `~/.claude/skills`
 - run a local release flow with version tags
 
@@ -42,7 +42,7 @@ copilot-subagent-skill/
 3. Run `bun run build` to produce distributables.
 4. Run `bun run deploy` to install locally for Claude Code.
 
-## Build artifacts (`.zip` and `.skill`)
+## Build artifacts (`.zip` and expanded skill directory)
 
 Build command:
 
@@ -53,11 +53,11 @@ bun run build
 For `v0.1.0`, this produces:
 
 - `dist/copilot-subagent-v0.1.0.zip`
-- `dist/copilot-subagent-v0.1.0.skill`
+- `dist/copilot-subagent/`
 
 Notes:
 
-- `.skill` is a renamed copy of the `.zip` payload.
+- `dist/copilot-subagent/` mirrors the packaged skill directory for local inspection and install testing.
 - archive root is `copilot-subagent/`.
 - required entries:
   - `copilot-subagent/SKILL.md`
@@ -113,12 +113,11 @@ Manual process:
 1. `bun run release:local`
 2. `git push origin <branch>`
 3. `git push origin copilot-subagent-v<version>`
-4. create a GitHub Release and upload artifacts in one step:
+4. create a GitHub Release and upload the `.zip` artifact:
 
 ```bash
 gh release create copilot-subagent-v<version> \
   dist/copilot-subagent-v<version>.zip \
-  dist/copilot-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --title "copilot-subagent v<version>" \
   --notes "Release copilot-subagent v<version>."
@@ -129,7 +128,6 @@ If the release already exists, upload/replace assets:
 ```bash
 gh release upload copilot-subagent-v<version> \
   dist/copilot-subagent-v<version>.zip \
-  dist/copilot-subagent-v<version>.skill \
   --repo <owner>/<monorepo> \
   --clobber
 ```

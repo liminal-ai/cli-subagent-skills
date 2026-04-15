@@ -65,6 +65,17 @@ project_dir() {
   printf '%s\n' "$CURSOR_PROJECTS_DIR/$(project_slug)"
 }
 
+sanitize_json_stream() {
+  perl -0pe '
+    s/\e\][^\a]*(?:\a|\e\\)//gs;
+    s/\eP(?:.|\n)*?\e\\//gs;
+    s/\e\[[0-?]*[ -\/]*[@-~]//gs;
+    s/\e[@-_]//gs;
+    s/\r(?!\n)//g;
+    s/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]//g;
+  ' | awk '/^[[:space:]]*{/'
+}
+
 latest_session_id() {
   local dir="$(
     printf '%s\n' "$(project_dir)/agent-transcripts"
@@ -105,6 +116,14 @@ latest_session_id() {
 resolve_session_id() {
   local session_id="${1:-}"
   if [[ -n "$session_id" ]]; then
+    local transcript
+    transcript="$(transcript_file "$session_id")"
+    local stream
+    stream="$(stream_file "$session_id")"
+    if [[ ! -f "$transcript" && ! -f "$stream" ]]; then
+      echo "Session not found: $session_id" >&2
+      return 1
+    fi
     printf '%s\n' "$session_id"
   else
     latest_session_id
@@ -179,7 +198,17 @@ extract_tools_stream() {
            elif $tc.key == "grepToolCall" then "Grep"
            else ($tc.key | sub("ToolCall$"; ""))
            end),
-        input: ($tc.value.args // {}),
+        input: (
+          if $tc.key == "shellToolCall" then
+            {
+              command: $tc.value.args.command,
+              description: ($tc.value.args.description // null),
+              workingDirectory: ($tc.value.args.workingDirectory // null)
+            }
+          else
+            ($tc.value.args // {})
+          end
+        ),
         id: $evt.call_id
       }' "$input"
 }
@@ -239,14 +268,18 @@ run_exec() {
   local prompt="$1"
   shift
 
+  local temp_raw
+  temp_raw="$(mktemp "/tmp/cursor-result-raw.XXXXXX")"
   local temp_stream
   temp_stream="$(mktemp "/tmp/cursor-result.XXXXXX")"
   local exit_code=0
 
   (
     cd "$(project_cwd)"
-    cursor-agent -p --output-format stream-json --trust "$@" "$prompt" >"$temp_stream"
+    TERM=dumb NO_COLOR=1 CLICOLOR=0 FORCE_COLOR=0 cursor-agent -p --output-format stream-json --trust "$@" "$prompt" </dev/null >"$temp_raw"
   ) || exit_code=$?
+
+  sanitize_json_stream <"$temp_raw" >"$temp_stream"
 
   local session_id
   session_id="$(jq -rs '[.[] | select(.type=="result") | .session_id] | last // empty' "$temp_stream")"
@@ -264,7 +297,7 @@ run_exec() {
     extract_last_text_stream "$temp_stream"
   fi
 
-  rm -f "$temp_stream"
+  rm -f "$temp_raw" "$temp_stream"
   return "$exit_code"
 }
 

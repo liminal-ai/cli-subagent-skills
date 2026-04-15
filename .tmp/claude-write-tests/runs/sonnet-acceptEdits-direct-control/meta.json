@@ -1,0 +1,18 @@
+{
+  "run_name": "sonnet-acceptEdits-direct-control",
+  "runner": "direct",
+  "model_id": "claude-sonnet-4-6",
+  "mode": "acceptEdits",
+  "allowed_tools": "Read,Write,Edit,Bash,Grep,Glob",
+  "exit_status": 0,
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "session_id": "0f4cc991-bfe9-4e88-9b93-079583343333",
+  "result_text": "All three writes completed successfully:\n\n- **`outputs/sonnet/acceptEdits/created.txt`** — created with `created from source token ALPHA-42`\n- **`inputs/edit-target.md`** — placeholder line replaced and bullet appended\n- **`outputs/sonnet/acceptEdits/nested/result.json`** — created with the required JSON fields",
+  "validation": {
+    "created_matches": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  }
+}

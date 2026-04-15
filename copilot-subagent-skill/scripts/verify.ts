@@ -64,14 +64,21 @@ async function main(): Promise<void> {
   const version = await readVersion(repoRoot);
   const base = `copilot-subagent-v${version}`;
   const zipPath = join(repoRoot, "dist", `${base}.zip`);
-  const skillPath = join(repoRoot, "dist", `${base}.skill`);
+  const distSkillDir = join(repoRoot, "dist", "copilot-subagent");
+  const legacySkillPath = join(repoRoot, "dist", `${base}.skill`);
 
   await mustExist(zipPath);
-  await mustExist(skillPath);
+  await mustExist(distSkillDir);
+  await mustExist(join(distSkillDir, "SKILL.md"));
+  await mustExist(join(distSkillDir, "scripts", "copilot-result"));
 
-  const [zipStat, skillStat] = await Promise.all([fs.stat(zipPath), fs.stat(skillPath)]);
-  if (zipStat.size !== skillStat.size) {
-    throw new Error(`Artifact size mismatch: zip=${zipStat.size}, skill=${skillStat.size}`);
+  try {
+    await fs.access(legacySkillPath);
+    throw new Error(`Legacy .skill artifact should not exist: ${legacySkillPath}`);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("should not exist")) {
+      throw error;
+    }
   }
 
   const zipList = run("unzip", ["-l", zipPath], repoRoot);

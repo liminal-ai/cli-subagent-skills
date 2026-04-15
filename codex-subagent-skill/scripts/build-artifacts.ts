@@ -75,22 +75,26 @@ async function main(): Promise<void> {
   }
 
   const version = await readVersion(repoRoot);
+  const skillName = "codex-subagent";
   const artifactBase = `codex-subagent-v${version}`;
   const distDir = join(repoRoot, "dist");
+  const distSkillDir = join(distDir, skillName);
   const zipPath = join(distDir, `${artifactBase}.zip`);
-  const skillPath = join(distDir, `${artifactBase}.skill`);
+  const legacySkillPath = join(distDir, `${artifactBase}.skill`);
 
   await fs.mkdir(distDir, { recursive: true });
   await fs.rm(zipPath, { force: true });
-  await fs.rm(skillPath, { force: true });
+  await fs.rm(legacySkillPath, { force: true });
+  await fs.rm(distSkillDir, { recursive: true, force: true });
 
   const tempRoot = await fs.mkdtemp(join(tmpdir(), "codex-subagent-skill-"));
 
   try {
-    const stagedSkillDir = join(tempRoot, "codex-subagent");
+    const stagedSkillDir = join(tempRoot, skillName);
     await copyDirectoryFiltered(skillSourceDir, stagedSkillDir);
+    await copyDirectoryFiltered(skillSourceDir, distSkillDir);
 
-    const zipResult = spawnSync("zip", ["-r", "-q", zipPath, "codex-subagent"], {
+    const zipResult = spawnSync("zip", ["-r", "-q", zipPath, skillName], {
       cwd: tempRoot,
       encoding: "utf8",
     });
@@ -100,14 +104,13 @@ async function main(): Promise<void> {
       fail(`zip command failed: ${details}`);
     }
 
-    await fs.copyFile(zipPath, skillPath);
   } finally {
     await fs.rm(tempRoot, { recursive: true, force: true });
   }
 
   console.log(`Built artifacts:`);
   console.log(`- ${zipPath}`);
-  console.log(`- ${skillPath}`);
+  console.log(`- ${distSkillDir}`);
 }
 
 await main();

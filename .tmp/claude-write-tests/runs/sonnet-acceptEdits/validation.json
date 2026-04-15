@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "sonnet",
+  "model_id": "claude-sonnet-4-6",
+  "mode": "acceptEdits",
+  "exit_status": 0,
+  "session_id": "d5343ee5-5598-448a-af04-08a08886f7c5",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "All three writes completed successfully:\n\n- **outputs/sonnet/acceptEdits/created.txt** — created with `created from source token ALPHA-42`\n- **inputs/edit-target.md** — placeholder line replaced and bullet appended\n- **outputs/sonnet/acceptEdits/nested/result.json** — created with the required JSON fields",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/sonnet-acceptEdits/command.txt"
+  }
+}

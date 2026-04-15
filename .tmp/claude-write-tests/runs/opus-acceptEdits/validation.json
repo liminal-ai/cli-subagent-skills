@@ -1,0 +1,26 @@
+{
+  "runner": "helper",
+  "model_slug": "opus",
+  "model_id": "claude-opus-4-6",
+  "mode": "acceptEdits",
+  "exit_status": 0,
+  "session_id": "fed5e7d2-1bff-4b2d-87dd-d2bde24cb174",
+  "parsed_json": true,
+  "agent_claimed_success": true,
+  "timed_out": false,
+  "result_text": "All four operations completed successfully:\n\n1. **`outputs/opus/acceptEdits/created.txt`** — created with exact line `created from source token ALPHA-42`\n2. **`inputs/edit-target.md` placeholder** — replaced `REPLACE_ME` with `replaced with ALPHA-42`\n3. **`inputs/edit-target.md` bullet** — appended `- added from source token ALPHA-42`\n4. **`outputs/opus/acceptEdits/nested/result.json`** — created with all four required JSON fields",
+  "rubric": "PASS",
+  "validation": {
+    "created_exists": true,
+    "created_matches": true,
+    "nested_exists": true,
+    "nested_matches": true,
+    "edit_matches": true,
+    "writes_happened": true
+  },
+  "artifacts": {
+    "stdout_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/stdout.txt",
+    "stderr_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/stderr.txt",
+    "command_file": "/Users/leemoore/code/cli-as-subagent-skills/.tmp/claude-write-tests/runs/opus-acceptEdits/command.txt"
+  }
+}
